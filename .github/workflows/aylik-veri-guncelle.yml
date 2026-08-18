@@ -1,17 +1,16 @@
-name: Aylık TÜFE/Yİ-ÜFE Güncelleme
+name: Aylık TÜFE/Yİ-ÜFE Güncelleme (EVDS - DURAKLATILDI)
 
-# Her ayın 3'ünde, TÜİK'in veriyi genelde saat 10:00'da açıklamasına karşı
-# güvenlik payı olarak günde birkaç kez (10:15, 12:15, 15:15, 18:15 TRT)
-# çalışır. Veri henüz yayınlanmamışsa script zararsızca aynı değeri yazar;
-# yayınlanır yayınlanmaz bir sonraki deneme günceller. Türkiye yaz/kış saati
-# uygulamıyor (UTC+3 sabit), bu yüzden saatler UTC-3 olarak sabitlenmiştir.
+# DURAKLATILDI (18.08.2026): TCMB, EVDS sistemini "EVDS3" ile yeniledi ve bu
+# script'in kullandığı eski herkese açık REST API (basit bir API anahtarıyla
+# çalışan evds2.tcmb.gov.tr) kapatıldı. Yeni sistemin veri uç noktası oturum
+# çerezi istiyor, belgelenmiş bir API sunmuyor. Bu yüzden zamanlanmış tetikleyici
+# kaldırıldı; birincil veri girişi artık Issue Form ile yapılıyor
+# (bkz. .github/workflows/oran-girisini-isle.yml). TCMB resmi bir API
+# yayınlarsa (aylık kontrol kurulu, bkz. proje notları) fetch-oranlar.mjs
+# güncellenip zamanlayıcı burada tekrar açılabilir; "workflow_dispatch" ile
+# hâlâ elle denenebilir.
 on:
-  schedule:
-    - cron: "15 7 3 * *"   # 10:15 TRT
-    - cron: "15 9 3 * *"   # 12:15 TRT
-    - cron: "15 12 3 * *"  # 15:15 TRT
-    - cron: "15 15 3 * *"  # 18:15 TRT
-  workflow_dispatch: {}    # gerekirse elle de tetiklenebilir
+  workflow_dispatch: {}
 
 permissions:
   contents: write

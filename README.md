@@ -5,21 +5,28 @@ Bu klasör, fulyahukuk.com'daki kira artış hesaplama widget'ının revize edil
 ## Klasör yapısı
 
 ```
-widget/kira-hesap-widget.html   Mevcut aracın revize edilmiş hali (tam geçmiş + fark takibi)
-widget/kira-basit-hesap.html    Yeni: tek artış dönemi için basit hesaplayıcı
-data/oranlar.json               TÜFE/Yİ-ÜFE veri kaynağı (otomasyon tarafından güncellenir)
-otomasyon/fetch-oranlar.mjs     TCMB EVDS'ten veri çekip data/oranlar.json'u güncelleyen script
-otomasyon/KURULUM.md            Bir kezlik kurulum adımları (EVDS anahtarı, GitHub secret, vb.)
-.github/workflows/              Her ayın 3'ünde otomatik çalışan GitHub Actions tanımı
+widget/kira-hesap-widget.html      Mevcut aracın revize edilmiş hali (tam geçmiş + fark takibi)
+widget/kira-basit-hesap.html       Yeni: tek artış dönemi için basit hesaplayıcı
+data/oranlar.json                  TÜFE/Yİ-ÜFE veri kaynağı — HER İKİ widget da bunu okur
+.github/ISSUE_TEMPLATE/oran-guncelle.yml   Aylık veri girişi formu (tek giriş noktası)
+.github/workflows/oran-girisini-isle.yml   Formu işleyip data/oranlar.json'u güncelleyen iş akışı
+otomasyon/veri-isle.mjs            Form gövdesini ayrıştırıp dosyayı güncelleyen script
+otomasyon/fetch-oranlar.mjs        (DURAKLATILDI) TCMB EVDS'ten otomatik çekim script'i
+otomasyon/KURULUM.md               Bir kezlik kurulum adımları
 ```
 
-## 1) Otomatik TÜFE/Yİ-ÜFE güncellemesi
+## 1) Aylık veri girişi — tek nokta, iki araç
 
-Artık oranlar elle güncellenmiyor. `otomasyon/fetch-oranlar.mjs`, TCMB'nin resmi ve ücretsiz **EVDS** API'sinden TÜFE ve Yİ-ÜFE endeks verisini çekip TÜİK'in kendi yöntemiyle ("12 aylık ortalamalara göre % değişim") hesaplıyor ve `data/oranlar.json`'a yazıyor. `.github/workflows/aylik-veri-guncelle.yml` bunu her ayın 3'ünde, TÜİK'in açıklama saatine (~10:00) göre birkaç kez deneyerek otomatik çalıştırıyor; widget'lar bu dosyayı sayfa her açıldığında GitHub'dan çekiyor. Tamamen ücretsiz, sunucu gerektirmiyor, kurulumdan sonra elle müdahale gerekmiyor.
+TCMB'nin EVDS sistemini 2026'da "EVDS3" ile yenilemesiyle, eskiden kullanılan herkese açık/anahtarlı API kapatıldı; yeni sistem oturum açmayı gerektiriyor ve belgelenmiş bir API sunmuyor (ayrıntı için sohbet geçmişine bakılabilir). Bu yüzden tam otomatik çekim yerine **tek bir, çok basit manuel giriş noktası** kuruldu:
 
-Kurulum adımları (yaklaşık 10 dakika, tek seferlik): **[otomasyon/KURULUM.md](otomasyon/KURULUM.md)**.
+1. Repo'da **Issues → New Issue → "Aylık TÜFE / Yİ-ÜFE Oranı Girişi"** formu açılır.
+2. Ay, yıl ve TÜİK'in açıkladığı iki oran (TÜFE, Yİ-ÜFE) girilip gönderilir.
+3. `.github/workflows/oran-girisini-isle.yml` bunu otomatik yakalar, `otomasyon/veri-isle.mjs` ile `data/oranlar.json`'a yazar, commit'ler ve issue'yu "✅ Güncellendi" yorumuyla kapatır. Değer mantıksız görünüyorsa (biçim hatası, aralık dışı vb.) issue **açık** kalır ve hata yorumu bırakılır — sessizce yanlış veri yazılmaz.
+4. `widget/kira-hesap-widget.html` **ve** `widget/kira-basit-hesap.html` aynı `data/oranlar.json`'u okuduğu için, tek giriş her iki araca da otomatik yansır.
 
-**Doğrulama gerekiyor:** Script'in kullandığı iki EVDS seri kodu en olası tahminlerle dolduruldu ama hukuki sonuçlara etkisi olduğu için EVDS arayüzünden bizzat doğrulanması gerekiyor — KURULUM.md'nin 3. adımına bakın. Doğrulanana kadar script hatalı/mantıksız bir değer hesaplarsa veri **yazmadan** duracak şekilde tasarlandı, yani "sessizce yanlış rakam" riski yok.
+Ayda bir kez, ~30 saniyelik bu form doldurma dışında elle yapılacak bir şey yok. Kurulum: **[otomasyon/KURULUM.md](otomasyon/KURULUM.md)**.
+
+**Not — EVDS otomasyonu duraklatıldı:** `otomasyon/fetch-oranlar.mjs` ve onu tetikleyen zamanlanmış iş akışı (`aylik-veri-guncelle.yml`) şu an **kapalı** (yalnızca elle tetiklenebilir durumda), çünkü TCMB'nin yeni EVDS3'ü basit bir API anahtarıyla çalışmıyor. TCMB'nin resmi bir API yayınlayıp yayınlamadığı ayda bir otomatik olarak kontrol ediliyor (Claude'un zamanlanmış rutini); resmi bir API çıkarsa bu script güncellenip otomasyon yeniden açılabilir.
 
 ## 2) Kod incelemesi — tekrar eden / yavaşlatan kısımlar
 

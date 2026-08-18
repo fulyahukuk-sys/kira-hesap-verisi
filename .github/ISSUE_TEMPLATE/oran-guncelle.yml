@@ -1,0 +1,58 @@
+name: "Aylık TÜFE / Yİ-ÜFE Oranı Girişi"
+description: "TÜİK'in her ayın 3'ünde açıkladığı yeni oranı sisteme girmek için bu formu kullanın."
+title: "Oran güncelleme"
+labels: ["oran-guncelleme"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        TÜİK'in "12 Aylık Ortalamalara Göre % Değişim" bültenini (haberlerde veya data.tuik.gov.tr'de) kontrol edip aşağıyı doldurun.
+        Gönder butonuna bastığınızda sistem birkaç dakika içinde otomatik olarak günceller ve bu ekranı kapatır — başka bir şey yapmanıza gerek yok.
+  - type: dropdown
+    id: ay
+    attributes:
+      label: "Ay (bültenin açıklandığı ay)"
+      description: "Örn: 3 Ağustos'ta açıklanan oran için 'Ağustos' seçin."
+      options:
+        - Ocak
+        - Şubat
+        - Mart
+        - Nisan
+        - Mayıs
+        - Haziran
+        - Temmuz
+        - Ağustos
+        - Eylül
+        - Ekim
+        - Kasım
+        - Aralık
+    validations:
+      required: true
+  - type: dropdown
+    id: yil
+    attributes:
+      label: "Yıl"
+      options:
+        - "2026"
+        - "2027"
+        - "2028"
+        - "2029"
+        - "2030"
+        - "2031"
+        - "2032"
+    validations:
+      required: true
+  - type: input
+    id: tufe
+    attributes:
+      label: "TÜFE — 12 Aylık Ortalamalara Göre % Değişim"
+      placeholder: "Örn: 31.90"
+    validations:
+      required: true
+  - type: input
+    id: yiufe
+    attributes:
+      label: "Yİ-ÜFE — 12 Aylık Ortalamalara Göre % Değişim (varsa)"
+      placeholder: "Örn: 27.54"
+    validations:
+      required: false
