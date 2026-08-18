@@ -13,13 +13,14 @@ Bu kurulum **bir kez** yapılır; sonrasında sistem her ayın 3'ünde kendiliğ
 1. https://evds2.tcmb.gov.tr adresine gidin, sağ üstten **Kayıt Ol** ile ücretsiz üye olun.
 2. Üyelik onaylandıktan sonra "Profilim" bölümünden **API Anahtarınızı** kopyalayın.
 
-## 3) TÜFE ve Yİ-ÜFE seri kodlarını doğrulayın (ÖNEMLİ)
+## 3) TÜFE ve Yİ-ÜFE seri kodları (doğrulandı ✓)
 
-Hukuki bir hesaplama aracı olduğu için bu adım atlanmamalıdır: `otomasyon/fetch-oranlar.mjs` dosyasının başındaki `TUFE_SERI_KODU` ve `YIUFE_SERI_KODU` değerleri en olası kodlarla dolduruldu, ancak EVDS arayüzünden **kendiniz doğrulamalısınız**:
+`otomasyon/fetch-oranlar.mjs` dosyasındaki kodlar, EVDS3 arayüzünde "Tablo Oluştur" ile üretilen gerçek sütun başlıklarından bizzat doğrulandı (18.08.2026):
 
-1. https://evds2.tcmb.gov.tr adresinde "Seri Mağazası" arama kutusuna **"Tüketici Fiyat Endeksi Genel"** yazın, çıkan serinin kodunu not edin.
-2. Aynı şekilde **"Yurt İçi Üretici Fiyat Endeksi Genel"** için de kodu not edin.
-3. Kodlar dosyadakiyle aynıysa bir şey yapmanıza gerek yok. Farklıysa, GitHub repo secret'ı olarak `TUFE_SERI_KODU` ve `YIUFE_SERI_KODU` adlarıyla doğru kodları ekleyin (script önce ortam değişkenine bakar).
+- TÜFE → **Tüketici Fiyat Endeksi (TÜİK) → Genel Endeks (2003=100)** → `TP.GENENDEKS.T1`
+- Yİ-ÜFE → **Yurt İçi Üretici Fiyat Endeksi (TÜİK) → 1.Yurt İçi Üretici Fiyat Endeksi** → `TP.TUFE1YI.T1`
+
+Ekstra bir işlem gerekmiyor. TÜİK ileride bu serileri değiştirir/yeni taban yılına geçerse (örn. 2003=100'den 2025=100'e geçiş süreci gibi), aynı yöntemle (EVDS'te seriyi bulup "Tablo Oluştur" ile sütun başlığını okuyarak) yeni kodu bulup GitHub repo secret'ı olarak `TUFE_SERI_KODU` / `YIUFE_SERI_KODU` adlarıyla eklemeniz yeterli (script önce ortam değişkenine bakar, dosyadaki varsayılanı ezer).
 
 > Script, ham endeks verisinden TÜİK'in resmi yöntemiyle ("son 12 ayın ortalaması / önceki 12 ayın ortalaması") oranı kendisi hesaplar. Bu sayede TÜİK'in ilan ettiği yüzdeyle bire bir örtüşür. Hesaplanan değer mantıksız görünürse (negatif, %500 üzeri vb.) script veri **yazmadan** hata ile durur — repo Actions sekmesinde kırmızı çarpı olarak görünür ve GitHub size otomatik e-posta atar.
 

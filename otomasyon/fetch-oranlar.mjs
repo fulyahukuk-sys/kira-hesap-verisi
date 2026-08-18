@@ -12,7 +12,8 @@
 //      Aşağıdaki değerler tahminidir, EVDS arayüzünden MUTLAKA doğrulayın -
 //      hukuki bir hesaplama aracı olduğu için yanlış seri kodu sessizce
 //      yanlış sonuç üretebilir. Ayrıntılar için ../otomasyon/KURULUM.md.
-const TUFE_SERI_KODU = process.env.TUFE_SERI_KODU || "TP.FG.J0";
+// Her iki kod da EVDS arayüzünden (Tablo Oluştur -> sütun başlığı) doğrulandı.
+const TUFE_SERI_KODU = process.env.TUFE_SERI_KODU || "TP.GENENDEKS.T1";
 const YIUFE_SERI_KODU = process.env.YIUFE_SERI_KODU || "TP.TUFE1YI.T1";
 
 import { readFile, writeFile } from "node:fs/promises";
