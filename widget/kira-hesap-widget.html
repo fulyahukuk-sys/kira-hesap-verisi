@@ -1,0 +1,782 @@
+<div class="kira-hesap-widget">
+    <style>
+        /* GENEL KAPSAYICI */
+        .kira-hesap-widget {
+            max-width: 1200px;
+            width: 100%;
+            margin: auto;
+            padding: 30px 25px;
+            background: #F5F1E8;
+            border-radius: 15px;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .kira-hesap-widget * { box-sizing: border-box; }
+
+        /* BAŞLIK VE NOT ALANI */
+        .kira-hesap-widget h2 {
+            color: #264832;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: clamp(22px, 5vw, 32px);
+            font-family: Georgia, serif;
+        }
+
+        .kira-uyari-notu {
+            color: #e67e22;
+            font-size: clamp(14px, 3vw, 18px);
+            font-weight: bold;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        .kira-hesap-widget h3 {
+            color: #264832;
+            margin-bottom: 15px;
+            margin-top: 25px;
+            font-size: 18px;
+            border-bottom: 2px solid #e1e1e1;
+            padding-bottom: 5px;
+        }
+
+        /* GİRDİ ALANLARI (GRID TASARIMI) */
+        .kira-hesap-widget .kira-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .kira-hesap-widget label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .kira-hesap-widget .kira-help-text {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            margin-top: -3px;
+            font-style: italic;
+        }
+
+        .kira-hesap-widget input[type="number"],
+        .kira-hesap-widget select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            transition: border-color 0.3s;
+        }
+
+        .kira-hesap-widget .ikili-secim {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .kira-hesap-widget .ikili-secim > * { flex: 1 1 120px; min-width: 0; }
+
+        .kira-hesap-widget input:focus,
+        .kira-hesap-widget select:focus {
+            outline: none;
+            border-color: #2A4930;
+        }
+
+        /* CHECKBOX VE RADYO BUTONLARI */
+        .kira-hesap-widget .kira-radio-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 12px; }
+        .kira-hesap-widget .kira-radio-label { display: flex; align-items: center; cursor: pointer; font-weight: normal; font-size: 14px; }
+        .kira-hesap-widget .kira-radio-label input { margin-right: 8px; width: 18px; height: 18px; cursor: pointer; }
+
+        /* HATA DURUMU */
+        .kira-hesap-widget .kira-error { border: 1px solid red !important; background-color: #fff8f8; }
+
+        /* BUTONLAR */
+        .kira-hesap-widget .kira-btn {
+            width: 100%;
+            padding: 15px;
+            background: #2A4930;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            transition: opacity 0.3s;
+            margin-top: 20px;
+            text-align: center;
+            display: block;
+            text-decoration: none;
+            min-height: 48px;
+        }
+        .kira-hesap-widget .kira-btn:hover { opacity: 0.9; }
+        .kira-hesap-widget .kira-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .kira-hesap-widget .btn-print { background: #424242; margin-top: 25px; }
+        .kira-hesap-widget .btn-wp { background: #25D366; }
+
+        .kira-hesap-widget .kira-veri-durumu {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        /* SONUÇ KARTI */
+        .kira-hesap-widget .kira-result-box {
+            display: none;
+            background: #ffffff;
+            padding: 40px 20px;
+            border-radius: 10px;
+            border: 1px solid #e1e1e1;
+            margin-top: 25px;
+            overflow-x: auto;
+        }
+
+        .kira-hesap-widget .kira-res-title {
+            font-size: clamp(20px, 5vw, 28px);
+            color: #264832;
+            text-align: center;
+            font-family: Georgia, serif;
+            font-weight: normal;
+            margin-bottom: 5px;
+            margin-top: 0;
+        }
+
+        .kira-hesap-widget .kira-res-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 15px;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .kira-hesap-widget .kira-res-row strong { font-family: Georgia, serif; font-size: 20px; color: #333; }
+
+        .kira-hesap-widget .kira-res-total {
+            font-size: 18px;
+            font-weight: bold;
+            color: #264832;
+            background: #F5F1E8;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .kira-hesap-widget .kira-res-total strong { font-size: clamp(24px, 6vw, 34px); color: #264832; margin-top: 10px; display: block; font-family: Georgia, serif; word-break: break-word; }
+
+        /* FARK VURGUSU */
+        .kira-hesap-widget .kira-fark-vurgu {
+            background-color: #fcfcfc;
+            border: 2px dashed #ccc;
+            padding: 25px 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .kira-hesap-widget .kira-fark-vurgu span { font-size: 18px; color: #555; margin-bottom: 10px; font-weight: bold;}
+        .kira-hesap-widget .kira-fark-vurgu strong { font-size: clamp(22px, 6vw, 32px); font-weight: bold; font-family: Georgia, serif; word-break: break-word; }
+
+        /* YILLIK DETAY TABLOSU */
+        .kira-hesap-widget .yil-grup-baslik { background: #264832; color: white; padding: 12px 15px; border-radius: 4px; margin-top: 25px; font-weight: bold; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 14px;}
+        .kira-hesap-widget .ay-satir { display: flex; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid #f0f0f0; font-size: 14px; align-items: center; gap: 8px; }
+        .kira-hesap-widget .ay-satir > div { flex: 1; min-width: 0; }
+        .kira-hesap-widget .ay-merkez { text-align: center; font-weight: bold; color: #333; }
+        .kira-hesap-widget .ay-sag { text-align: right; font-size: 13px; font-weight: bold; }
+        .kira-hesap-widget .yil-toplam-satir { display: flex; justify-content: space-between; padding: 15px; background: #f9f9f9; font-weight: bold; color: #2A4930; border-bottom: 2px solid #e1e1e1; font-size: 15px; gap: 8px; flex-wrap: wrap; }
+        .kira-hesap-widget .yil-toplam-satir > div { flex: 1; min-width: 0; }
+
+        /* BİLGİ VE UYARI KUTULARI */
+        .kira-hesap-widget .wp-instructions-box { font-size: 13px; color: #555; background: #ffffff; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid #e1e1e1; border-left: 4px solid #25D366; }
+        .kira-hesap-widget .wp-instructions-box ol { margin-top: 10px; margin-bottom: 0; padding-left: 20px; }
+        .kira-hesap-widget .wp-instructions-box li { margin-bottom: 5px; }
+
+        .kira-hesap-widget .kira-aciklama-alani {
+            background-color: #fffaf0;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 30px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .kira-hesap-widget .kira-aciklama-alani strong { display: block; margin-bottom: 8px; font-size: 15px; color: #264832; }
+
+        /* MOBİL / TABLET UYUM */
+        @media (max-width: 768px) {
+            .kira-hesap-widget { padding: 22px 16px; }
+            .kira-hesap-widget .kira-grid { grid-template-columns: 1fr; gap: 15px; }
+            .kira-hesap-widget .kira-result-box { padding: 20px 12px; }
+            .kira-hesap-widget .ay-satir { flex-direction: column; text-align: center; gap: 8px; }
+            .kira-hesap-widget .ay-satir > div { text-align: center !important; }
+            .kira-hesap-widget .yil-toplam-satir { flex-direction: column; text-align: center; gap: 8px; }
+            .kira-hesap-widget .yil-toplam-satir > div { text-align: center !important; }
+            .kira-hesap-widget .yil-grup-baslik { font-size: 12px; flex-direction: column; text-align: center; gap: 5px; }
+            .kira-hesap-widget .kira-res-row { flex-direction: column; text-align: center; }
+        }
+
+        @media (max-width: 420px) {
+            .kira-hesap-widget { padding: 16px 10px; border-radius: 10px; }
+            .kira-hesap-widget h2 { margin-bottom: 16px; }
+            .kira-hesap-widget .kira-result-box { padding: 16px 8px; }
+        }
+    </style>
+
+    <div class="kira-uyari-notu">
+        NOT: Endeks verileri, TÜİK tarafından açıklanan "12 Aylık Ortalamalara Göre %" oranlarına dayanmaktadır.
+    </div>
+
+    <h2>Kira Artış Oranı Hesaplama</h2>
+
+    <h3>Kira Sözleşmesi Bilgileri</h3>
+
+    <div class="kira-grid">
+        <div>
+            <label>Kira Başlangıç Tarihi <span style="color:red;">*</span></label>
+            <span class="kira-help-text">İlk sözleşmenin yapıldığı ay ve yılı seçiniz.</span>
+            <div class="ikili-secim">
+                <select class="kira-startMonth" required>
+                    <option value="">Ay Seçiniz</option>
+                    <option value="1">Ocak</option>
+                    <option value="2">Şubat</option>
+                    <option value="3">Mart</option>
+                    <option value="4">Nisan</option>
+                    <option value="5">Mayıs</option>
+                    <option value="6">Haziran</option>
+                    <option value="7">Temmuz</option>
+                    <option value="8">Ağustos</option>
+                    <option value="9">Eylül</option>
+                    <option value="10">Ekim</option>
+                    <option value="11">Kasım</option>
+                    <option value="12">Aralık</option>
+                </select>
+                <select class="kira-startYear" required>
+                    <option value="">Yıl Seçiniz</option>
+                    <option value="2026">2026</option>
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                    <option value="2021">2021</option>
+                    <option value="2020">2020</option>
+                    <option value="2019">2019</option>
+                    <option value="2018">2018</option>
+                    <option value="2017">2017</option>
+                    <option value="2016">2016</option>
+                    <option value="2015">2015</option>
+                    <option value="2014">2014</option>
+                    <option value="2013">2013</option>
+                    <option value="2012">2012</option>
+                    <option value="2011">2011</option>
+                </select>
+            </div>
+        </div>
+        <div>
+            <label>Kiralanan Türü <span style="color:red;">*</span></label>
+            <div class="kira-radio-group" style="margin-top: 10px;">
+                <label class="kira-radio-label"><input type="radio" name="mulk_turu" value="konut" checked> Konut</label>
+                <label class="kira-radio-label"><input type="radio" name="mulk_turu" value="isyeri"> İş Yeri</label>
+            </div>
+        </div>
+    </div>
+
+    <h3>Ücret ve Artış Kriterleri</h3>
+    <div class="kira-grid">
+        <div>
+            <label>Sözleşmedeki İlk Kira Tutarı (TL) <span style="color:red;">*</span></label>
+            <span class="kira-help-text">İlk yıl için ödediğiniz başlangıç kirası (Tam Sayı).</span>
+            <input type="number" class="kira-ilkKira" step="1" min="1" placeholder="Örn: 5000" required>
+        </div>
+        <div>
+            <label>Artış Oranı Kriteri <span style="color:red;">*</span></label>
+            <select class="kira-oranKriteri" required>
+                <option value="tufe">TÜFE (12 Aylık Ortalamalara Göre %)</option>
+                <option value="ufe" class="kira-ufe-secenegi">Yİ-ÜFE (12 Aylık Ortalamalara Göre %)</option>
+                <option value="ozel">Özel Artış Oranı Belirle</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="kira-grid kira-ozelOranAlani" style="display:none;">
+        <div>
+            <label>Özel Artış Oranı (%) <span style="color:red;">*</span></label>
+            <input type="number" class="kira-ozelOran" step="0.01" placeholder="Örn: 25">
+        </div>
+    </div>
+
+    <div class="kira-dinamik-odenen-alanlar" style="display:none; margin-top:25px; padding-top:20px; border-top:2px solid #e1e1e1;"></div>
+
+    <button type="button" class="kira-btn" onclick="kiraHesapla(this)">HESAPLAMAYI BAŞLAT</button>
+    <div class="kira-veri-durumu"></div>
+
+    <div class="kira-result-box kira-sonucAlani">
+        <h2 class="kira-res-title">Hesaplama Sonuçları</h2>
+        <div style="width:50px; height:2px; background:#264832; margin:10px auto 25px auto;"></div>
+
+        <div class="kira-detay-listesi"></div>
+
+        <h3 style="margin-top: 40px; font-size:26px; text-align:center;">Genel Özet</h3>
+        <div class="kira-res-row"><span>Güncel (Olması Gereken) Kira:</span> <strong class="kira-resGereken">0 ₺</strong></div>
+        <div class="kira-res-row"><span>Şu An Ödenen Kira:</span> <strong class="kira-resOdenen">0 ₺</strong></div>
+
+        <div class="kira-fark-vurgu">
+            <span>Güncel Aylık Fark Durumu</span>
+            <strong class="kira-resFark">0 ₺</strong>
+        </div>
+
+        <div class="kira-res-total">
+            <span>Başlangıçtan Bugüne Toplam Tahakkuk Eden (Olması Gereken Toplam Kira)</span>
+            <strong class="kira-resGenelToplam">0 ₺</strong>
+        </div>
+
+        <div class="kira-res-total" style="background-color:#ffffff; border: 2px solid #264832; margin-top:15px;">
+            <span style="color:#333;">Geçmişten Bugüne Toplam Birikmiş Fark (Eksik / Fazla Durumu)</span>
+            <strong class="kira-resGenelFark" style="font-size:32px;">0 ₺</strong>
+        </div>
+
+        <div class="kira-aciklama-alani">
+            <strong>Hukuki Bilgilendirme ve Yasal Uyarı</strong>
+            Hesaplamalar, tarafınızca girilen veriler ve TÜİK tarafından açıklanan resmi enflasyon oranları dikkate alınarak matematiksel olarak oluşturulmuştur.<br><br>
+            Kira hukuku kapsamında yer alan 5 yıllık süre sonu kira tespit davaları, uyarlama davaları, eksik/fazla ödemelere ilişkin geriye dönük icra takipleri ve sözleşmenize özel istisnai hükümler bu otomatik hesaplamanın dışındadır. Kesin ve bağlayıcı hukuki sonuçlar ile hak kaybı yaşamamak adına sonuç raporunuzu avukatınıza danışmanız tavsiye edilir.
+        </div>
+
+        <div class="kira-action-buttons">
+            <button type="button" onclick="kiraPrintReport(this)" class="kira-btn btn-print">Yazdır / PDF Olarak Kaydet</button>
+            <a class="kira-btn btn-wp kira-wpBtn" href="#" target="_blank" rel="noopener">WhatsApp'tan İletişime Geçin</a>
+
+            <div class="wp-instructions-box">
+                <strong>WhatsApp Üzerinden Dosya Gönderimi</strong><br>
+                Otomatik olarak yalnızca metin mesajı aktarabiliriz. Pratik olarak süreci şöyle yönetebilirsiniz:
+                <ol>
+                    <li>Önce <strong>"Yazdır / PDF Olarak Kaydet"</strong> butonuna basarak raporu PDF olarak cihazınıza kaydedin.</li>
+                    <li>Ardından <strong>"WhatsApp'tan İletişime Geçin"</strong> butonuna tıklayın.</li>
+                    <li>Kaydettiğiniz PDF'i sohbet penceresinden doğrudan bize iletin.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const WP_NUMBER = "902129091891"; // Fulya Hukuk İletişim Numarası
+
+    // Otomatik güncellenen veri kaynağı (bkz. otomasyon/fetch-oranlar.mjs +
+    // .github/workflows/aylik-veri-guncelle.yml). Repo'yu GitHub'a yükledikten
+    // sonra "KULLANICI_ADI/REPO_ADI" kısmını kendi bilgilerinizle değiştirin.
+    const ORANLAR_JSON_URL = "https://raw.githubusercontent.com/fulyahukuk-sys/kira-hesap-verisi/main/data/oranlar.json";
+
+    // Ağ isteği başarısız olursa (CDN erişilemez, kurulum henüz tamamlanmamış vb.)
+    // kullanılacak çevrimdışı yedek tablo. Otomasyon her ay bu dosyayı da
+    // güncel tutar: data/oranlar.json ile birebir aynı tutulmalıdır.
+    const ORANLAR_YEDEK = {"2026":[[34.88,25.36],[33.98,25.39],[33.39,25.60],[32.82,25.98],[32.43,26.48],[32.24,26.96],[32.03,27.26],[0,0],[0,0],[0,0],[0,0],[0,0]],"2025":[[58.51,41.10],[56.35,39.50],[53.83,37.55],[51.26,35.23],[48.73,32.65],[45.80,30.17],[43.23,28.34],[41.13,27.07],[39.62,26.28],[38.36,25.83],[37.15,25.49],[35.91,25.37]],"2024":[[53.86,49.93],[54.72,47.35],[55.91,45.71],[57.50,45.28],[59.64,45.83],[62.51,47.24],[65.07,47.97],[65.93,47.55],[64.91,46.23],[63.47,44.81],[62.02,43.93],[60.45,42.60]],"2023":[[72.31,128.47],[72.45,125.53],[71.83,120.72],[70.20,113.73],[67.20,105.50],[63.72,95.80],[59.95,86.59],[57.45,78.51],[56.28,71.97],[55.30,65.55],[54.26,58.46],[53.40,53.15]],"2022":[[19.60,43.86],[22.58,49.93],[25.98,56.83],[29.88,64.30],[34.46,72.03],[39.33,80.38],[44.54,88.77],[49.65,97.30],[54.69,105.39],[59.91,114.02],[65.26,122.93],[70.36,128.94]],"2021":[[12.28,12.18],[12.53,13.64],[12.81,15.14],[13.18,17.04],[13.70,19.44],[14.13,22.24],[14.55,25.38],[15.15,28.47],[15.78,31.34],[16.42,33.83],[17.09,36.20],[17.71,38.94]],"2020":[[15.18,17.56],[14.52,15.71],[13.94,14.18],[13.33,12.61],[12.66,10.87],[12.10,9.14],[11.88,7.74],[11.51,6.81],[11.27,6.71],[11.47,7.71],[11.74,9.11],[12.04,10.69]],"2019":[[16.33,27.01],[17.16,28.70],[17.93,29.97],[18.70,31.17],[19.39,32.24],[19.91,32.85],[19.88,32.81],[19.91,32.34],[19.62,30.51],[18.27,26.44],[16.81,22.58],[15.87,19.68]],"2018":[[11.14,15.82],[11.23,15.66],[11.23,15.50],[11.14,15.35],[11.06,15.36],[11.10,15.80],[11.49,16.57],[12.00,17.41],[12.61,18.78],[13.75,21.36],[14.90,23.73],[15.63,25.52]],"2017":[[7.78,4.30],[7.76,4.96],[7.88,5.87],[8.21,6.89],[8.66,8.01],[9.09,9.02],[9.36,9.98],[9.44,10.94],[9.66,12.05],[9.98,13.26],[10.37,14.47],[10.87,15.38]],"2016":[[7.67,5.28],[7.87,5.50],[7.97,5.61],[7.96,5.64],[7.84,5.47],[7.71,5.19],[7.74,4.91],[7.91,4.77],[7.98,4.51],[7.92,4.07],[7.89,3.83],[7.79,3.93]],"2015":[[8.85,10.25],[8.80,9.59],[8.77,8.79],[8.70,8.03],[8.57,7.36],[8.45,6.98],[8.28,6.74],[8.07,6.43],[7.88,6.14],[7.80,5.92],[7.69,5.58],[7.61,5.33]],"2014":[[7.49,4.48],[7.53,5.22],[7.60,6.11],[7.70,6.95],[7.97,7.89],[8.23,8.66],[8.31,9.03],[8.35,9.26],[8.46,9.55],[8.54,9.84],[8.65,10.11],[8.80,10.32]],"2013":[[0,0],[0,0],[0,0],[8.08,4.23],[7.66,3.74],[0,0],[7.47,3.18],[7.47,3.23],[7.42,3.39],[7.32,3.58],[7.32,3.93],[7.39,4.10]],"2012":[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]],"2011":[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]};
+
+    const AYLAR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+
+    const simdikiTarih = () => {
+        const d = new Date();
+        return { yil: d.getFullYear(), ayIndex: d.getMonth() };
+    };
+
+    const formatMoney = (amount) =>
+        new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(amount);
+
+    // --- Veri yükleme (tek seferlik, tüm widget örnekleri için paylaşılır) ---
+    let oranlarPromise = null;
+    function oranlariYukle() {
+        if (!oranlarPromise) {
+            oranlarPromise = fetch(ORANLAR_JSON_URL, { cache: "no-store" })
+                .then((res) => { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
+                .then((veri) => ({ oranlar: veri.oranlar || veri, kaynak: "canlı" }))
+                .catch(() => ({ oranlar: ORANLAR_YEDEK, kaynak: "yedek" }));
+        }
+        return oranlarPromise;
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('.kira-hesap-widget').forEach(kurulumYap);
+    });
+
+    function kurulumYap(widget) {
+        const btn = widget.querySelector('.kira-btn');
+        const durum = widget.querySelector('.kira-veri-durumu');
+        btn.disabled = true;
+        durum.textContent = "Güncel oranlar yükleniyor...";
+
+        oranlariYukle().then(({ kaynak }) => {
+            btn.disabled = false;
+            durum.textContent = kaynak === "canlı"
+                ? ""
+                : "Not: Güncel veri kaynağına ulaşılamadı, çevrimdışı yedek tablo kullanılıyor.";
+        });
+
+        const oranSelect = widget.querySelector('.kira-oranKriteri');
+        const ufeSecenegi = widget.querySelector('.kira-ufe-secenegi');
+        const ozelAlan = widget.querySelector('.kira-ozelOranAlani');
+        const mulkTurleri = widget.querySelectorAll('input[name="mulk_turu"]');
+
+        // Konut/İş Yeri değişince Yİ-ÜFE seçeneğini gizle/göster (innerHTML'i
+        // yeniden kurmak yerine tek bir seçeneği devre dışı bırakıyoruz, böylece
+        // kullanıcının seçimi gereksiz yere sıfırlanmıyor).
+        function mulkTuruSenkronize() {
+            const isyeri = widget.querySelector('input[name="mulk_turu"]:checked').value === 'isyeri';
+            ufeSecenegi.hidden = !isyeri;
+            ufeSecenegi.disabled = !isyeri;
+            if (!isyeri && oranSelect.value === 'ufe') oranSelect.value = 'tufe';
+        }
+        mulkTurleri.forEach((radio) => radio.addEventListener('change', mulkTuruSenkronize));
+        mulkTuruSenkronize();
+
+        oranSelect.addEventListener('change', function () {
+            ozelAlan.style.display = this.value === 'ozel' ? 'grid' : 'none';
+        });
+
+        const startMonthInput = widget.querySelector('.kira-startMonth');
+        const startYearInput = widget.querySelector('.kira-startYear');
+        startMonthInput.addEventListener('change', () => dinamikAlanlariOlustur(widget));
+        startYearInput.addEventListener('change', () => dinamikAlanlariOlustur(widget));
+    }
+
+    // Kira başlangıcından bugüne kadarki her "zam yılı" için fiilen ödenen
+    // tutarı soran alanları üretir.
+    function dinamikAlanlariOlustur(widget) {
+        const startMonthInput = widget.querySelector('.kira-startMonth');
+        const startYearInput = widget.querySelector('.kira-startYear');
+        const container = widget.querySelector('.kira-dinamik-odenen-alanlar');
+
+        if (!startMonthInput.value || !startYearInput.value) {
+            container.style.display = 'none';
+            container.innerHTML = '';
+            return;
+        }
+
+        const basYil = parseInt(startYearInput.value, 10);
+        const basAyIndex = parseInt(startMonthInput.value, 10) - 1;
+        const { yil: mevcutYil, ayIndex: mevcutAyIndex } = simdikiTarih();
+
+        const zamYillari = [];
+        for (let y = basYil + 1; y <= mevcutYil; y++) {
+            if (y === mevcutYil && basAyIndex > mevcutAyIndex) break;
+            zamYillari.push(y);
+        }
+
+        if (zamYillari.length === 0) {
+            container.style.display = 'none';
+            container.innerHTML = '';
+            return;
+        }
+
+        const sonYil = zamYillari[zamYillari.length - 1];
+        const satirlar = zamYillari.map((y) => {
+            const label = y === sonYil ? `${y} Yılı İtibarıyla Ödenen (GÜNCEL) (TL)` : `${y} Yılı İtibarıyla Ödenen (TL)`;
+            return `<div>
+                <label>${label} <span style="color:red;">*</span></label>
+                <input type="number" class="kira-dinamik-input" data-yil="${y}" step="1" min="1" placeholder="Örn: 15000" required>
+            </div>`;
+        });
+
+        container.innerHTML = `<h3 style="margin-top:0;">Geçmişten Bugüne Fiilen Ödenen Kira Tutarları</h3>
+            <p class="kira-help-text" style="margin-bottom:20px; color:#c0392b;">İlk kira başlangıcından sonraki yıllarda <strong>(zam dönemi sonrasında) fiilen ödediğiniz</strong> yeni kira tutarlarını ilgili yıla eksiksiz giriniz. Fark hesaplamaları sizin bu girdileriniz üzerinden belirlenecektir.</p>
+            <div class="kira-grid">${satirlar.join('')}</div>`;
+        container.style.display = 'block';
+    }
+
+    // 11 Haziran 2022 - 1 Temmuz 2024 arası, yalnızca konut kiraları için
+    // geçerli olan yasal %25 kira artış sınırı (7409 ve 7456 sayılı Kanunlar).
+    function pandemiSiniriUygulanmaliMi(yil, ayIndex, mulkTuru) {
+        if (mulkTuru !== 'konut') return false;
+        if (yil === 2022 && ayIndex >= 5) return true; // Haziran 2022+
+        if (yil === 2023) return true;
+        if (yil === 2024 && ayIndex <= 5) return true; // Temmuz 2024'e kadar
+        return false;
+    }
+
+    function gecerliOrani(yil, ayIndex, oranKriteri, ozelOran, oranlar) {
+        if (oranKriteri === 'ozel') return ozelOran;
+        const kayit = oranlar[yil] && oranlar[yil][ayIndex];
+        if (!kayit) return 0;
+        return oranKriteri === 'tufe' ? kayit[0] : kayit[1];
+    }
+
+    // Başlangıçtan bugüne, ay ay "olması gereken kira" ve kullanıcının fiilen
+    // ödediği kira arasındaki farkı hesaplayan saf fonksiyon. DOM'a dokunmaz,
+    // yalnızca veri döndürür - böylece hem render hem de ileride başka bir
+    // çıktı biçimi (örn. PDF/JSON export) için tek doğruluk kaynağı olur.
+    function gecmisiHesapla({ basYil, basAyIndex, ilkKira, mulkTuru, oranKriteri, ozelOran, odenenMap, oranlar }) {
+        const { yil: mevcutYil, ayIndex: mevcutAyIndex } = simdikiTarih();
+
+        let guncelHesaplananKira = ilkKira;
+        let aktifOdenenKira = ilkKira;
+        const kayitlar = [];
+
+        let yil = basYil;
+        let ay = basAyIndex;
+
+        while (yil < mevcutYil || (yil === mevcutYil && ay <= mevcutAyIndex)) {
+            let zamAyiMi = false;
+            let kullanilanOran = null;
+
+            if (!(yil === basYil && ay === basAyIndex) && ay === basAyIndex) {
+                zamAyiMi = true;
+                let oran = gecerliOrani(yil, ay, oranKriteri, ozelOran, oranlar);
+                if (oranKriteri !== 'ozel' && pandemiSiniriUygulanmaliMi(yil, ay, mulkTuru)) {
+                    oran = 25.00;
+                }
+                kullanilanOran = oran;
+
+                guncelHesaplananKira = Math.round(guncelHesaplananKira + (guncelHesaplananKira * oran / 100));
+
+                if (odenenMap.has(yil)) aktifOdenenKira = odenenMap.get(yil);
+            }
+
+            kayitlar.push({
+                yil, ay, zamAyiMi, kullanilanOran,
+                hesaplanan: guncelHesaplananKira,
+                odenen: aktifOdenenKira,
+                fark: aktifOdenenKira - guncelHesaplananKira,
+            });
+
+            ay++;
+            if (ay > 11) { ay = 0; yil++; }
+        }
+
+        return kayitlar;
+    }
+
+    function kriterIsmi(oranKriteri) {
+        if (oranKriteri === 'ozel') return null;
+        return oranKriteri === 'tufe' ? 'TÜFE' : 'Yİ-ÜFE';
+    }
+
+    function kayitlariRenderEt(kayitlar, oranKriteri, mulkTuru) {
+        const parcalar = [];
+        let yilBlokAcik = null;
+        let yilToplamHesaplanan = 0;
+        let yilToplamFark = 0;
+
+        kayitlar.forEach((k, i) => {
+            if (yilBlokAcik !== k.yil) {
+                if (yilBlokAcik !== null) {
+                    parcalar.push(yilToplamSatiri(yilBlokAcik, yilToplamHesaplanan, yilToplamFark));
+                }
+                parcalar.push(`<div class="yil-grup-baslik"><span>${k.yil} Yılı Dökümü</span><span style="font-weight:normal;">Durum (Hesaplanan vs Ödenen)</span></div>`);
+                yilBlokAcik = k.yil;
+                yilToplamHesaplanan = 0;
+                yilToplamFark = 0;
+            }
+
+            yilToplamHesaplanan += k.hesaplanan;
+            yilToplamFark += k.fark;
+
+            let notHtml = '';
+            if (k.zamAyiMi) {
+                const isim = kriterIsmi(oranKriteri);
+                const etiket = pandemiSiniriUygulanmaliMi(k.yil, k.ay, mulkTuru) && oranKriteri !== 'ozel'
+                    ? `%25 Pandemi Sınırı`
+                    : oranKriteri === 'ozel' ? `Özel Oran %${k.kullanilanOran.toFixed(2)}` : `${isim} %${k.kullanilanOran.toFixed(2)}`;
+                notHtml = `<span style="color:#c0392b; font-size:11px; display:block; margin-top:3px;">Zam Ayı (${etiket})</span>`;
+            }
+
+            const farkRenk = k.fark > 0 ? "#27ae60" : (k.fark < 0 ? "#d32f2f" : "#333");
+            const farkMetin = k.fark > 0 ? `+${formatMoney(k.fark)} (Fazla)` : (k.fark < 0 ? `${formatMoney(k.fark)} (Eksik)` : `Fark Yok`);
+
+            parcalar.push(`<div class="ay-satir">
+                <div>${AYLAR[k.ay]} ${k.yil}${notHtml}</div>
+                <div class="ay-merkez">${formatMoney(k.hesaplanan)}</div>
+                <div class="ay-sag" style="color:${farkRenk};">${farkMetin}</div>
+            </div>`);
+
+            const sonKayit = i === kayitlar.length - 1;
+            if (k.ay === 11 || sonKayit) {
+                parcalar.push(yilToplamSatiri(k.yil, yilToplamHesaplanan, yilToplamFark));
+                yilBlokAcik = null;
+            }
+        });
+
+        return parcalar.join('');
+    }
+
+    function yilToplamSatiri(yil, toplamHesaplanan, toplamFark) {
+        const renk = toplamFark > 0 ? "#27ae60" : (toplamFark < 0 ? "#d32f2f" : "#333");
+        const metin = toplamFark > 0 ? `+${formatMoney(toplamFark)} (Toplam Fazla)` : (toplamFark < 0 ? `${formatMoney(toplamFark)} (Toplam Eksik)` : `0 ₺ (Fark Yok)`);
+        return `<div class="yil-toplam-satir">
+            <div>${yil} Toplam Tahakkuk:</div>
+            <div style="text-align:center;">${formatMoney(toplamHesaplanan)}</div>
+            <div style="text-align:right; color:${renk};">${metin}</div>
+        </div>`;
+    }
+
+    window.kiraHesapla = function (btn) {
+        if (document.activeElement) document.activeElement.blur();
+
+        const widget = btn.closest('.kira-hesap-widget');
+        const resultSection = widget.querySelector('.kira-sonucAlani');
+        const detayListesi = widget.querySelector('.kira-detay-listesi');
+
+        const startMonthInput = widget.querySelector('.kira-startMonth');
+        const startYearInput = widget.querySelector('.kira-startYear');
+        const ilkKiraInput = widget.querySelector('.kira-ilkKira');
+        const mulkTuru = widget.querySelector('input[name="mulk_turu"]:checked').value;
+        const oranKriteri = widget.querySelector('.kira-oranKriteri').value;
+        const ozelOran = parseFloat(widget.querySelector('.kira-ozelOran').value);
+
+        [startMonthInput, startYearInput, ilkKiraInput].forEach((el) => el.classList.remove('kira-error'));
+
+        if (!startMonthInput.value || !startYearInput.value || !ilkKiraInput.value) {
+            if (!startMonthInput.value) startMonthInput.classList.add('kira-error');
+            if (!startYearInput.value) startYearInput.classList.add('kira-error');
+            if (!ilkKiraInput.value) ilkKiraInput.classList.add('kira-error');
+            alert('Lütfen yıldızlı (*) ana zorunlu alanları doldurunuz.');
+            return;
+        }
+
+        if (oranKriteri === 'ozel' && (isNaN(ozelOran) || ozelOran <= 0)) {
+            widget.querySelector('.kira-ozelOran').classList.add('kira-error');
+            alert('Lütfen geçerli bir özel oran giriniz.');
+            return;
+        }
+
+        const dynamicInputs = widget.querySelectorAll('.kira-dinamik-input');
+        let dHata = false;
+        const odenenMap = new Map();
+        dynamicInputs.forEach((inp) => {
+            inp.classList.remove('kira-error');
+            if (!inp.value) {
+                inp.classList.add('kira-error');
+                dHata = true;
+            } else {
+                odenenMap.set(parseInt(inp.dataset.yil, 10), parseInt(inp.value, 10));
+            }
+        });
+
+        if (dHata) {
+            alert('Lütfen ilgili yıllara ait fiilen ödediğiniz kira tutarlarını eksiksiz giriniz.');
+            return;
+        }
+
+        oranlariYukle().then(({ oranlar }) => {
+            const kayitlar = gecmisiHesapla({
+                basYil: parseInt(startYearInput.value, 10),
+                basAyIndex: parseInt(startMonthInput.value, 10) - 1,
+                ilkKira: parseInt(ilkKiraInput.value, 10),
+                mulkTuru, oranKriteri, ozelOran, odenenMap, oranlar,
+            });
+
+            detayListesi.innerHTML = kayitlariRenderEt(kayitlar, oranKriteri, mulkTuru);
+
+            const son = kayitlar[kayitlar.length - 1];
+            const genelToplamHesaplanan = kayitlar.reduce((t, k) => t + k.hesaplanan, 0);
+            const genelToplamFark = kayitlar.reduce((t, k) => t + k.fark, 0);
+
+            widget.querySelector('.kira-resGereken').textContent = formatMoney(son.hesaplanan);
+            widget.querySelector('.kira-resOdenen').textContent = formatMoney(son.odenen);
+            widget.querySelector('.kira-resGenelToplam').textContent = formatMoney(genelToplamHesaplanan);
+
+            const farkHesabi = widget.querySelector('.kira-resFark');
+            const sonFark = son.fark;
+            if (sonFark > 0) {
+                farkHesabi.innerHTML = `<span style="color:#27ae60;">+${formatMoney(sonFark)}<br><span style="font-size:16px; font-weight:normal;">(Fazla Ödeme Yapılıyor)</span></span>`;
+                farkHesabi.parentElement.style.borderColor = "#c8e6c9";
+                farkHesabi.parentElement.style.backgroundColor = "#e8f5e9";
+            } else if (sonFark < 0) {
+                farkHesabi.innerHTML = `<span style="color:#d32f2f;">${formatMoney(sonFark)}<br><span style="font-size:16px; font-weight:normal;">(Eksik Ödeme Yapılıyor)</span></span>`;
+                farkHesabi.parentElement.style.borderColor = "#ffcdd2";
+                farkHesabi.parentElement.style.backgroundColor = "#ffebee";
+            } else {
+                farkHesabi.innerHTML = `<span style="color:#333;">Tam Eşleşme<br><span style="font-size:16px; font-weight:normal;">(Fark Yok)</span></span>`;
+                farkHesabi.parentElement.style.borderColor = "#ccc";
+                farkHesabi.parentElement.style.backgroundColor = "#fcfcfc";
+            }
+
+            const genelFarkHesabi = widget.querySelector('.kira-resGenelFark');
+            if (genelToplamFark > 0) {
+                genelFarkHesabi.innerHTML = `<span style="color:#27ae60;">+${formatMoney(genelToplamFark)} (Toplam Fazla Ödenmiş)</span>`;
+            } else if (genelToplamFark < 0) {
+                genelFarkHesabi.innerHTML = `<span style="color:#d32f2f;">${formatMoney(genelToplamFark)} (Toplam Eksik Ödenmiş)</span>`;
+            } else {
+                genelFarkHesabi.innerHTML = `<span style="color:#333;">Tam Eşleşme</span>`;
+            }
+
+            const wpBtn = widget.querySelector('.kira-wpBtn');
+            const wpMessage = encodeURIComponent(`Merhaba Fulya Hukuk, web sitenizdeki kira artış hesaplama aracından rapor oluşturdum.\n\nYasal Olması Gereken Güncel Kira: ${formatMoney(son.hesaplanan)}\nŞu An Fiilen Ödediğim: ${formatMoney(son.odenen)}\nGüncel Aylık Fark: ${formatMoney(sonFark)}\nGeçmişten Bugüne Birikmiş Fark: ${formatMoney(genelToplamFark)}\n\nKonuyla ilgili hukuki danışmanlık talep ediyorum.`);
+            wpBtn.href = `https://wa.me/${WP_NUMBER}?text=${wpMessage}`;
+
+            resultSection.style.display = 'block';
+            resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    };
+
+    window.kiraPrintReport = function (btn) {
+        const widget = btn.closest('.kira-hesap-widget');
+        const resultSection = widget.querySelector('.kira-sonucAlani');
+        const actionButtons = widget.querySelector('.kira-action-buttons');
+
+        actionButtons.style.display = 'none';
+        const printContent = resultSection.innerHTML;
+        const printWindow = window.open('', '_blank', 'width=900,height=800');
+        actionButtons.style.display = 'block';
+
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Kira Artış Raporu</title>
+                <style>
+                    @media print {
+                        @page { size: A4; margin: 15mm; }
+                        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    }
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #333; line-height: 1.6; background-color: #ffffff; margin: 0 auto; max-width: 210mm; }
+                    h2 { color: #264832; text-align: center; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-bottom: 25px; font-size: 24px; font-family: Georgia, serif; }
+                    h3 { font-size: 18px; color: #264832; margin-top: 20px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; text-align:center;}
+                    .kira-res-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+                    .kira-res-row strong { font-family: Georgia, serif; font-size: 16px; }
+                    .kira-fark-vurgu { border: 2px dashed #ccc; padding: 15px; margin: 15px 0; text-align: center; border-radius: 8px; }
+                    .kira-fark-vurgu span { display: block; font-size: 14px; margin-bottom: 5px; font-weight: bold;}
+                    .kira-fark-vurgu strong { font-size: 24px; font-family: Georgia, serif; }
+                    .kira-res-total { font-size: 16px; font-weight: bold; color: #264832; background: #f0f7f0; padding: 15px; border-radius: 8px; margin-top: 15px; border: none; text-align: center; }
+                    .kira-res-total strong { font-size: 20px; display: block; margin-top: 8px; font-family: Georgia, serif;}
+                    .yil-grup-baslik { background: #264832; color: white; padding: 8px 12px; font-weight: bold; margin-top: 15px; font-size:13px; display:flex; justify-content:space-between;}
+                    .ay-satir { display: flex; justify-content: space-between; padding: 6px 12px; border-bottom: 1px solid #eee; font-size: 12px; }
+                    .ay-satir > div { flex: 1; }
+                    .ay-merkez { text-align: center; font-weight:bold; }
+                    .ay-sag { text-align: right; font-weight:bold; }
+                    .yil-toplam-satir { display: flex; justify-content: space-between; padding: 8px 12px; background: #f9f9f9; font-weight: bold; color: #264832; border-bottom: 2px solid #ccc; font-size: 13px;}
+                    .yil-toplam-satir > div { flex: 1; }
+                    .kira-aciklama-alani { background: #fffaf0; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-top: 25px; font-size: 12px; color: #856404; page-break-inside: avoid; }
+                    .kira-aciklama-alani strong { display: block; margin-bottom: 5px; font-size: 14px; color: #264832; }
+                </style>
+            </head>
+            <body>
+                <h1 style="text-align:center; color:#264832; margin-bottom: 5px;">KİRA ARTIŞ HESAPLAMA RAPORU</h1>
+                ${printContent}
+            </body>
+            </html>
+        `);
+
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+    };
+})();
+</script>

@@ -1,0 +1,44 @@
+name: Aylık TÜFE/Yİ-ÜFE Güncelleme
+
+# Her ayın 3'ünde, TÜİK'in veriyi genelde saat 10:00'da açıklamasına karşı
+# güvenlik payı olarak günde birkaç kez (10:15, 12:15, 15:15, 18:15 TRT)
+# çalışır. Veri henüz yayınlanmamışsa script zararsızca aynı değeri yazar;
+# yayınlanır yayınlanmaz bir sonraki deneme günceller. Türkiye yaz/kış saati
+# uygulamıyor (UTC+3 sabit), bu yüzden saatler UTC-3 olarak sabitlenmiştir.
+on:
+  schedule:
+    - cron: "15 7 3 * *"   # 10:15 TRT
+    - cron: "15 9 3 * *"   # 12:15 TRT
+    - cron: "15 12 3 * *"  # 15:15 TRT
+    - cron: "15 15 3 * *"  # 18:15 TRT
+  workflow_dispatch: {}    # gerekirse elle de tetiklenebilir
+
+permissions:
+  contents: write
+
+jobs:
+  guncelle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: TÜFE / Yİ-ÜFE verisini çek ve hesapla
+        env:
+          EVDS_API_KEY: ${{ secrets.EVDS_API_KEY }}
+        run: node otomasyon/fetch-oranlar.mjs
+
+      - name: Değişiklik varsa commitle
+        run: |
+          if git diff --quiet -- data/oranlar.json; then
+            echo "Değişiklik yok, commit atlanıyor."
+            exit 0
+          fi
+          git config user.name "kira-hesap-botu"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/oranlar.json
+          git commit -m "chore: aylık TÜFE/Yİ-ÜFE verisi güncellendi"
+          git push
