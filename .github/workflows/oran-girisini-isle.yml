@@ -14,7 +14,10 @@ permissions:
 
 jobs:
   isle:
-    if: contains(github.event.issue.labels.*.name, 'oran-guncelleme')
+    # Etiket yerine formun kendi içeriğine bakılıyor: GitHub, şablondaki
+    # "labels:" alanını repoda önceden oluşturulmamış etiketler için otomatik
+    # eklemeyebiliyor, bu da tetiklemeyi güvenilmez kılıyordu.
+    if: contains(github.event.issue.body, '### Ay (bültenin açıklandığı ay)')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
