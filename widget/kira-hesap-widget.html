@@ -336,6 +336,8 @@
 
         <div class="kira-detay-listesi"></div>
 
+        <div class="kira-aciklama-alani kira-donem-notu" style="display:none; margin-top:15px;"></div>
+
         <h3 style="margin-top: 40px; font-size:26px; text-align:center;">Genel Özet</h3>
         <div class="kira-res-row"><span>Güncel (Olması Gereken) Kira:</span> <strong class="kira-resGereken">0 ₺</strong></div>
         <div class="kira-res-row"><span>Şu An Ödenen Kira:</span> <strong class="kira-resOdenen">0 ₺</strong></div>
@@ -688,6 +690,17 @@
             const son = kayitlar[kayitlar.length - 1];
             const genelToplamHesaplanan = kayitlar.reduce((t, k) => t + k.hesaplanan, 0);
             const genelToplamFark = kayitlar.reduce((t, k) => t + k.fark, 0);
+
+            // İçinde bulunulan ay tam da zam ayıysa ve TÜİK verisi henüz
+            // sisteme girilmediyse (oran 0), bunu "artış yok" gibi sessizce
+            // göstermek yerine açıkça uyarıyoruz.
+            const donemNotu = widget.querySelector('.kira-donem-notu');
+            if (son.zamAyiMi && oranKriteri !== 'ozel' && !son.kullanilanOran) {
+                donemNotu.innerHTML = `<strong>Not</strong>${AYLAR[son.ay]} ${son.yil} için TÜİK verisi henüz sisteme girilmemiş. Güncel ayın oranı her ayın 3'ünde saat 10:00'dan sonra açıklanıp işlenir; bu döneme ait tutarlar geçici olarak önceki oranla (artışsız) gösteriliyor olabilir.`;
+                donemNotu.style.display = 'block';
+            } else {
+                donemNotu.style.display = 'none';
+            }
 
             widget.querySelector('.kira-resGereken').textContent = formatMoney(son.hesaplanan);
             widget.querySelector('.kira-resOdenen').textContent = formatMoney(son.odenen);

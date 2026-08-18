@@ -44,8 +44,15 @@
         }
         .kbasit-widget .kbasit-btn:hover { opacity: 0.9; }
         .kbasit-widget .kbasit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .kbasit-widget .kbasit-btn-wp { background: #25D366; text-decoration: none; }
 
         .kbasit-widget .kbasit-veri-durumu { font-size: 12px; color: #666; margin-top: 8px; text-align: center; }
+
+        .kbasit-widget .kbasit-donem-notu {
+            display: none;
+            background-color: #fffaf0; border: 1px solid #ffeeba; color: #856404;
+            padding: 10px 12px; border-radius: 8px; margin: -5px 0 15px 0; font-size: 12px; line-height: 1.5;
+        }
 
         .kbasit-widget .kbasit-sonuc {
             display: none; background: #fff; padding: 25px 20px; border-radius: 10px;
@@ -98,6 +105,8 @@
         </div>
     </div>
 
+    <div class="kbasit-donem-notu"></div>
+
     <div class="kbasit-grid">
         <div>
             <label>Artış Oranı Kriteri <span style="color:red;">*</span></label>
@@ -121,6 +130,8 @@
         <div class="kbasit-sonuc-tutar kbasit-yeniKira">0 ₺</div>
         <div class="kbasit-sonuc-detay"><span>Kullanılan Oran</span><strong class="kbasit-kullanilanOran">-</strong></div>
         <div class="kbasit-sonuc-detay"><span>Artış Tutarı</span><strong class="kbasit-artisTutari">0 ₺</strong></div>
+        <a class="kbasit-btn kbasit-btn-wp kbasit-wpBtn" href="#" target="_blank" rel="noopener">WhatsApp'tan Danışmanlık Alın</a>
+
         <div class="kbasit-not">
             Bu araç yalnızca <strong>tek bir artış dönemi</strong> için hızlı bir üst sınır hesabı sunar; geçmişe dönük eksik/fazla ödeme takibi yapmaz. Sözleşmenize özel istisnai hükümler ve hukuki uyuşmazlıklar bu hesaplamanın dışındadır, kesin sonuç için avukatınıza danışınız.
         </div>
@@ -129,6 +140,7 @@
 
 <script>
 (function () {
+    const WP_NUMBER = "902129091891"; // Fulya Hukuk İletişim Numarası
     const ORANLAR_JSON_URL = "https://raw.githubusercontent.com/fulyahukuk-sys/kira-hesap-verisi/main/data/oranlar.json";
     const ORANLAR_YEDEK = {"2026":[[34.88,25.36],[33.98,25.39],[33.39,25.60],[32.82,25.98],[32.43,26.48],[32.24,26.96],[32.03,27.26],[0,0],[0,0],[0,0],[0,0],[0,0]],"2025":[[58.51,41.10],[56.35,39.50],[53.83,37.55],[51.26,35.23],[48.73,32.65],[45.80,30.17],[43.23,28.34],[41.13,27.07],[39.62,26.28],[38.36,25.83],[37.15,25.49],[35.91,25.37]],"2024":[[53.86,49.93],[54.72,47.35],[55.91,45.71],[57.50,45.28],[59.64,45.83],[62.51,47.24],[65.07,47.97],[65.93,47.55],[64.91,46.23],[63.47,44.81],[62.02,43.93],[60.45,42.60]],"2023":[[72.31,128.47],[72.45,125.53],[71.83,120.72],[70.20,113.73],[67.20,105.50],[63.72,95.80],[59.95,86.59],[57.45,78.51],[56.28,71.97],[55.30,65.55],[54.26,58.46],[53.40,53.15]],"2022":[[19.60,43.86],[22.58,49.93],[25.98,56.83],[29.88,64.30],[34.46,72.03],[39.33,80.38],[44.54,88.77],[49.65,97.30],[54.69,105.39],[59.91,114.02],[65.26,122.93],[70.36,128.94]]};
 
@@ -160,14 +172,21 @@
     function kurulumYap(widget) {
         const btn = widget.querySelector('.kbasit-btn');
         const durum = widget.querySelector('.kbasit-veri-durumu');
+        const donemNotu = widget.querySelector('.kbasit-donem-notu');
+        let yuklenenOranlar = null;
+
         btn.disabled = true;
         durum.textContent = "Güncel oranlar yükleniyor...";
-        oranlariYukle().then(({ kaynak }) => {
+        oranlariYukle().then(({ oranlar, kaynak }) => {
             btn.disabled = false;
+            yuklenenOranlar = oranlar;
             durum.textContent = kaynak === "canlı" ? "" : "Not: Güncel veri kaynağına ulaşılamadı, çevrimdışı yedek tablo kullanılıyor.";
+            donemNotunuGuncelle();
         });
 
+        const ayIsimleri = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
         const yilSelect = widget.querySelector('.kbasit-yil');
+        const aySelect = widget.querySelector('.kbasit-ay');
         const simdi = new Date();
         const mevcutYil = simdi.getFullYear();
         for (let y = mevcutYil + 1; y >= mevcutYil - 4; y--) {
@@ -177,25 +196,51 @@
             if (y === mevcutYil) opt.selected = true;
             yilSelect.appendChild(opt);
         }
-        widget.querySelector('.kbasit-ay').value = String(simdi.getMonth() + 1);
+        aySelect.value = String(simdi.getMonth() + 1);
 
         const kriterSelect = widget.querySelector('.kbasit-kriter');
         const ufeSecenegi = widget.querySelector('.kbasit-ufe-secenegi');
         const ozelAlan = widget.querySelector('.kbasit-ozelOranAlani');
         const mulkTurleri = widget.querySelectorAll('input[name="kbasit_mulk_turu"]');
 
+        // Seçilen ay/yıl/kriter için TÜİK verisi henüz sisteme girilmemişse
+        // (özellikle içinde bulunulan ay için 3'ünden önce) kullanıcıyı önceden
+        // bilgilendirir; "sonuç yok" ile karşılaşıp şaşırmasını önler.
+        function donemNotunuGuncelle() {
+            if (!yuklenenOranlar || kriterSelect.value === 'ozel') {
+                donemNotu.style.display = 'none';
+                return;
+            }
+            const ay = parseInt(aySelect.value, 10);
+            const yil = parseInt(yilSelect.value, 10);
+            const ayIndex = ay - 1;
+            const kayit = yuklenenOranlar[yil] && yuklenenOranlar[yil][ayIndex];
+            const oran = kayit ? (kriterSelect.value === 'tufe' ? kayit[0] : kayit[1]) : 0;
+
+            if (!oran) {
+                donemNotu.textContent = `NOT: ${ayIsimleri[ayIndex]} ${yil} için TÜİK verisi henüz sisteme girilmemiş. Güncel ayın oranı her ayın 3'ünde saat 10:00'dan sonra açıklanıp sisteme işlenir; o zamana kadar bu dönem için hesaplama yapılamayabilir.`;
+                donemNotu.style.display = 'block';
+            } else {
+                donemNotu.style.display = 'none';
+            }
+        }
+
         function mulkTuruSenkronize() {
             const isyeri = widget.querySelector('input[name="kbasit_mulk_turu"]:checked').value === 'isyeri';
             ufeSecenegi.hidden = !isyeri;
             ufeSecenegi.disabled = !isyeri;
             if (!isyeri && kriterSelect.value === 'ufe') kriterSelect.value = 'tufe';
+            donemNotunuGuncelle();
         }
         mulkTurleri.forEach((r) => r.addEventListener('change', mulkTuruSenkronize));
         mulkTuruSenkronize();
 
         kriterSelect.addEventListener('change', function () {
             ozelAlan.style.display = this.value === 'ozel' ? 'block' : 'none';
+            donemNotunuGuncelle();
         });
+        aySelect.addEventListener('change', donemNotunuGuncelle);
+        yilSelect.addEventListener('change', donemNotunuGuncelle);
     }
 
     window.kbasitHesapla = function (btn) {
@@ -256,6 +301,11 @@
             widget.querySelector('.kbasit-yeniKira').textContent = formatMoney(yeniKira);
             widget.querySelector('.kbasit-kullanilanOran').textContent = oranEtiketi;
             widget.querySelector('.kbasit-artisTutari').textContent = `+${formatMoney(artis)}`;
+
+            const wpBtn = widget.querySelector('.kbasit-wpBtn');
+            const ayIsimleri = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+            const wpMessage = encodeURIComponent(`Merhaba Fulya Hukuk, web sitenizdeki kira artış hesaplama aracını kullandım.\n\nMevcut Kira: ${formatMoney(mevcutKira)}\nArtış Dönemi: ${ayIsimleri[ayIndex]} ${yil}\nKullanılan Oran: ${oranEtiketi}\nHesaplanan Yeni Kira: ${formatMoney(yeniKira)}\n\nKonuyla ilgili hukuki danışmanlık talep ediyorum.`);
+            wpBtn.href = `https://wa.me/${WP_NUMBER}?text=${wpMessage}`;
 
             const sonuc = widget.querySelector('.kbasit-sonuc');
             sonuc.style.display = 'block';
